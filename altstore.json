@@ -1,0 +1,44 @@
+{
+  "name": "Nightshift",
+  "identifier": "com.jannehy.nightshift.source",
+  "subtitle": "Your music library's night shift",
+  "website": "https://github.com/Jannehy/nightshift-ios",
+  "iconURL": "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png",
+  "tintColor": "FFB03A",
+  "apps": [
+    {
+      "name": "Nightshift",
+      "bundleIdentifier": "com.jannehy.nightshift",
+      "developerName": "Jannehy",
+      "subtitle": "Client for a self-hosted Nightshift server",
+      "localizedDescription": "A native client for a self-hosted Nightshift server. Paste a Spotify, SoundCloud or YouTube link and watch the download live, search the iTunes catalog and pull tracks or whole albums straight into your library, manage the playlists the nightly job keeps in sync, and run that job by hand when you do not want to wait for the night.\n\nNeeds a Nightshift server (1.3 or newer recommended) reachable from the phone \u2014 on the local network or through a VPN.",
+      "iconURL": "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png",
+      "tintColor": "FFB03A",
+      "category": "utilities",
+      "screenshotURLs": [
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/01-downloads.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/02-downloads.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/03-downloads.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/04-downloads.png"
+      ],
+      "screenshots": [
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/01-downloads.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/02-downloads.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/03-downloads.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/04-downloads.png"
+      ],
+      "versions": [
+        {
+          "version": "1.0.0",
+          "buildVersion": "1",
+          "date": "2026-08-19",
+          "localizedDescription": "Nightshift 1.0.0.",
+          "downloadURL": "https://github.com/Jannehy/nightshift-ios/releases/download/v1.0.0/Nightshift.ipa",
+          "size": 445306,
+          "minOSVersion": "16.0"
+        }
+      ]
+    }
+  ],
+  "news": []
+}
