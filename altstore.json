@@ -17,21 +17,21 @@
       "category": "utilities",
       "screenshotURLs": [
         "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/01-downloads.png",
-        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/02-downloads.png",
-        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/03-downloads.png",
-        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/04-downloads.png"
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/02-search.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/03-sync.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/04-settings.png"
       ],
       "screenshots": [
         "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/01-downloads.png",
-        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/02-downloads.png",
-        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/03-downloads.png",
-        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/04-downloads.png"
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/02-search.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/03-sync.png",
+        "https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/docs/screenshots/04-settings.png"
       ],
       "versions": [
         {
           "version": "1.0.0",
           "buildVersion": "1",
-          "date": "2026-08-19",
+          "date": "2026-08-20",
           "localizedDescription": "Nightshift 1.0.0.",
           "downloadURL": "https://github.com/Jannehy/nightshift-ios/releases/download/v1.0.0/Nightshift.ipa",
           "size": 445306,
