@@ -1,0 +1,44 @@
+name: Nightshift
+options:
+  bundleIdPrefix: com.jannehy
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    # Xcode's "recommended settings" prompt asks for these. Setting them here
+    # instead of accepting the prompt, because the prompt writes into the
+    # generated .xcodeproj, which the next `xcodegen generate` throws away.
+    CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
+    ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_EXTENSIONS: YES
+    # Put your Apple Developer Team ID here and signing survives regeneration –
+    # otherwise it has to be picked in Xcode's Signing tab after every run.
+    # Find it with:
+    #   grep -m1 DEVELOPMENT_TEAM Nightshift.xcodeproj/project.pbxproj
+    # DEVELOPMENT_TEAM: XXXXXXXXXX
+
+targets:
+  Nightshift:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+        excludes:
+          - "Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jannehy.nightshift
+        PRODUCT_NAME: Nightshift
+        INFOPLIST_FILE: Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_EMIT_LOC_STRINGS: YES

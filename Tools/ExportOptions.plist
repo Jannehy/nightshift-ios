@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Export method. Xcode 15 renamed these; the old names still work:
+	       release-testing  (was: ad-hoc)      – installs on registered devices
+	       debugging        (was: development) – same, but a debug build
+	     app-store-connect is pointless here: App Review guideline 5.2.3 rules
+	     this app out of the App Store. -->
+	<key>method</key>
+	<string>release-testing</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<!-- Replace with your ten-character Team ID:
+	     grep -m1 DEVELOPMENT_TEAM Nightshift.xcodeproj/project.pbxproj -->
+	<key>teamID</key>
+	<string>REPLACE_WITH_TEAM_ID</string>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>compileBitcode</key>
+	<false/>
+</dict>
+</plist>
