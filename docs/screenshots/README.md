@@ -1,7 +1,13 @@
-Drop PNG or JPG screenshots here and re-run
+Screenshots shown in the project README and offered in the AltStore source.
 
-    Tools/make-altstore-source.py <ipa> <version>
+Name them so the alphabetical order is the order you want:
 
-to have them listed in `altstore.json`. They are served straight from the
-repository, so no separate hosting is needed. Portrait screenshots from a
-recent iPhone look right in AltStore; three to five is plenty.
+    01-downloads.png
+    02-search.png
+    03-sync.png
+    04-settings.png
+
+The README links to exactly these four names. Adding or renaming files means
+editing the `<img>` tags at the top of `../../README.md` as well; the AltStore
+source picks up whatever is here automatically when you re-run
+`Tools/make-altstore-source.py`.

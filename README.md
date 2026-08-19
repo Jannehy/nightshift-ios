@@ -1,141 +1,129 @@
 # Nightshift for iOS
 
 A native SwiftUI client for a [Nightshift](https://github.com/Jannehy/nightshift)
-server. It talks to the same JSON API the web UI uses — no server changes
-required.
+server — your self-hosted music library, from your pocket.
+
+<p align="center">
+  <img src="docs/screenshots/01-downloads.png" width="24%" alt="Downloads with the live log">
+  <img src="docs/screenshots/02-search.png" width="24%" alt="Search">
+  <img src="docs/screenshots/03-sync.png" width="24%" alt="Sync playlists">
+  <img src="docs/screenshots/04-settings.png" width="24%" alt="Settings">
+</p>
 
 ## What it does
 
-| Screen | Backed by |
+| Screen | What you get |
 |---|---|
-| **Downloads** – paste a Spotify/SoundCloud/YouTube link, pick a Navidrome owner, toggle "keep in sync", watch the live log | `POST /download`, `GET /stream/<job_id>` (SSE), `GET /download-log`, `GET /api/queue`, `GET /nd-users` |
-| **Search** – iTunes catalog as an artwork grid, 30 s previews, one-tap track or full-album download | `GET /api/search`, `POST /api/download-from-query`, `POST /api/download-album` |
-| **Sync** – every playlist the nightly job maintains, grouped by source; admins set owner and visibility, owners remove their own | `GET/PATCH/DELETE /api/sync-playlists` |
-| **Nightly** – schedule in plain language, manual run, its own live log | `POST /nightly`, `GET /nightly-status`, `GET /nightly-log` |
-| **Settings** – account, password, user management, and a settings editor generated from whatever is in `config.yaml` | `GET/POST /api/config`, `POST /api/config/reset`, `/api/users*` |
+| **Downloads** | Paste a Spotify, SoundCloud or YouTube link, pick a Navidrome owner, mark it for nightly sync, and watch the download live |
+| **Search** | The iTunes catalog as an artwork grid with 30-second previews — one tap pulls a track or a whole album into your library |
+| **Sync** | Every playlist the nightly job keeps up to date, grouped by source; admins set owner and visibility |
+| **Nightly** | The schedule in plain language, a manual run, and its own live log |
+| **Settings** | Account and password, user management, the full server configuration, accent colour and app icon |
 
-Sign-in uses the Flask session cookie. Because the server marks the session
-permanent, `URLSession`'s cookie store keeps you signed in across launches; the
-password is kept in the Keychain so the app can re-authenticate silently when
-the cookie does expire. The Sync tab is hidden when `sync.enabled` is off, the
-owner picker when Navidrome is not configured, and the admin sections for
-non-admin accounts — the app follows `/api/me`, same as the web UI.
+German and English, following the device language. The accent colour has eight
+presets and a free colour picker; the app icon can be switched separately.
 
-Two live-log strategies, mirroring the web UI: while the app owns a job id it
-reads the SSE stream, and after a cold start (or when a download was started
-elsewhere) it falls back to polling the log endpoint.
+## What you need
 
-German and English are included; the app follows the device language.
+- An **iPhone or iPad with iOS 16** or newer
+- A **Nightshift server** you can reach from the phone — on your home network or
+  through a VPN such as Tailscale or WireGuard. Version **1.3 or newer** is
+  recommended: from that release the download log is per user, so you no longer
+  watch someone else's run.
+- An **Apple ID** for signing. Apple does not allow this kind of app in the App
+  Store (App Review guideline 5.2.3 rules out downloading media from third-party
+  services), so the app is signed with your own account, like any other
+  sideloaded app.
 
-Two independent appearance settings: the **accent colour** (eight presets plus a
-free colour picker) tints the whole UI including the launch mark, which is drawn
-as vectors rather than shipped as an image. The **app icon** is a separate
-setting, because iOS pops a system confirmation on every icon change and cannot
-generate icons at runtime — each variant is a PNG in the bundle, declared under
-`CFBundleAlternateIcons`. Both the icon PNGs and the launch mark's geometry come
-from `Tools/make-icon.py` (`--alternates` writes the variants, `--swift` prints
-the constants `NightshiftMark` draws from), so they cannot drift apart.
+## Installing
 
-## Requirements
+### AltStore or SideStore (recommended)
 
-- macOS with **Xcode 15 or newer** — iOS apps cannot be compiled on Linux
-- iOS 16.0 or newer on the device
-- An Apple ID. A free one signs the app for 7 days at a time; the paid
-  Developer Program gives a year and TestFlight.
+Both keep the app up to date and can refresh the signature on their own.
 
-## Building
+1. Set up [AltStore](https://altstore.io) or [SideStore](https://sidestore.io)
+   on your device, following their instructions.
+2. In the app: **Browse → Sources → +**
+3. Add this source:
 
-```bash
-brew install xcodegen        # once
-cd nightshift-ios
-xcodegen generate            # writes Nightshift.xcodeproj
-open Nightshift.xcodeproj
-```
+   ```
+   https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/altstore.json
+   ```
 
-Then in Xcode: select your team under *Signing & Capabilities*, pick your
-iPhone, and hit Run.
+4. Open **Nightshift** in the source and tap **Install**.
 
-Without XcodeGen: create a new iOS App project named `Nightshift`, delete the
-generated `ContentView.swift` and `NightshiftApp.swift`, drag the `Sources` and
-`Resources` folders in (*Create groups*), and set `Resources/Info.plist` as the
-target's Info.plist file.
+New versions then show up in AltStore by themselves.
 
-## Reaching the server
+### Sideloadly (no AltStore needed)
 
-The app is built for a private network path — Tailscale, WireGuard or the LAN —
-and speaks plain HTTP, so `Info.plist` carries an ATS exception
-(`NSAllowsArbitraryLoads`). Bring the tunnel up before connecting.
+1. Download `Nightshift.ipa` from the [latest release](../../releases/latest).
+2. Install [Sideloadly](https://sideloadly.io) on a Mac or PC, connect the
+   iPhone by cable, drop the IPA in and sign in with your Apple ID.
+3. On the iPhone: **Settings → General → VPN & Device Management** and trust the
+   developer profile.
 
-On the first screen enter the host, e.g. `nightshift.tail1234.ts.net` or
-`100.101.102.103`. A bare host gets `http://` and Nightshift's default port
-`8765`; anything more explicit is taken as typed:
+### A word on the seven days
+
+With a **free** Apple ID, a sideloaded app stops working after 7 days and has to
+be re-signed — AltStore does this by itself while your device and computer are on
+the same network. A **paid** Apple Developer account stretches this to a year.
+Free accounts are also limited to three sideloaded apps at a time.
+
+## Connecting
+
+On first launch, enter the address of your server:
 
 | Typed | Used |
 |---|---|
-| `nightshift.tail1234.ts.net` | `http://nightshift.tail1234.ts.net:8765` |
-| `192.168.1.5:9000` | `http://192.168.1.5:9000` |
-| `http://music.example.com` | `http://music.example.com` (port 80, no 8765 forced) |
-| `https://music.example.com` | `https://music.example.com` (port 443) |
-| `https://home.example.com/nightshift` | path prefix kept, for a server published under a subpath |
+| `192.168.1.20` | `http://192.168.1.20:8765` |
+| `192.168.1.20:9000` | that port instead of the default |
+| `nightshift.tail1234.ts.net` | over Tailscale, with the tunnel up |
+| `https://music.example.com` | taken as typed, port 443 |
 
-If you put an HTTPS reverse proxy in front of Nightshift, enter the full
-`https://…` URL and the ATS exception in `Info.plist` can go.
+A bare host gets `http://` and Nightshift's default port `8765`; anything more
+explicit is used as you typed it, path prefix included.
 
-Note that the server's own **setup wizard is web-only**. On a fresh server the
-app links you to `/setup` in Safari; once an admin exists, sign in from the app.
+The app speaks plain HTTP, because that is how Nightshift is normally reached
+over a private tunnel or the local network. Behind an HTTPS reverse proxy, enter
+the full `https://` URL.
 
-## Distribution
+Sign in with your Nightshift account. The session survives restarts, and the
+password is kept in the iOS Keychain so the app can sign in again by itself when
+the session expires.
 
-The App Store is out (guideline 5.2.3 — apps must not offer to download media
-from third-party services), so the app travels as source plus an IPA on the
-releases page.
+## Building from source
 
-An IPA signed with your own account only installs on devices registered to it.
-Everyone else re-signs it with their own Apple ID using AltStore or SideStore,
-which is what the **AltStore source** is for:
+Only needed if you want to change something — for installing, use a release.
 
 ```bash
-Tools/build-ipa.sh
-Tools/make-altstore-source.py build/Nightshift.ipa 1.0.0
+brew install xcodegen
+xcodegen generate
+open Nightshift.xcodeproj
 ```
 
-The second command writes `altstore.json` with the IPA's exact byte size (which
-AltStore checks) and keeps older versions listed so a downgrade stays possible.
-Screenshots dropped into `docs/screenshots/` are picked up automatically and
-served from the repository.
-Commit it, attach `Nightshift.ipa` to the matching GitHub release, and people
-add this URL as a source:
+Requires **macOS with Xcode 15** or newer. Pick your team under *Signing &
+Capabilities* (or put your Team ID into `project.yml` so it survives
+regeneration), then build to your device.
 
-```
-https://raw.githubusercontent.com/Jannehy/nightshift-ios/main/altstore.json
-```
+`Tools/build-ipa.sh` archives and exports an IPA from the command line;
+`Tools/make-altstore-source.py` writes the AltStore source with the IPA's exact
+size and picks up screenshots from `docs/screenshots/`.
 
-With a free Apple ID, AltStore-installed apps expire after 7 days and have to be
-refreshed; a paid developer account stretches that to a year.
+The app mark and the launcher icon come from one place: `Tools/make-icon.py`
+rasterises the icon, `--swift` prints the same geometry as constants for the
+version drawn inside the app, so the two cannot drift apart.
 
 ## Not included
 
-- **Push notifications** when a download finishes. APNs needs a paid developer
-  account and a server-side sender — Nightshift has no notification hook today.
-- **A share extension** ("Share → Nightshift" from the Spotify app). The
-  natural next step; it would post to `/download` with the shared URL.
-- **The setup wizard**, deliberately — a one-time flow is not worth a native
-  screen.
-- Cancelling a running job: the server has no cancel endpoint. "Clear log" only
-  detaches the view.
+- **Push notifications** when a download finishes — APNs needs a paid developer
+  account and a sender on the server side, which Nightshift has no hook for.
+- **A share extension** ("Share → Nightshift" from another app). The natural
+  next step; it would post the shared URL to `/download`.
+- **The setup wizard**, deliberately: on a fresh server the app links you to it
+  in Safari, and it is a one-time flow.
+- **Cancelling a running job** — the server has no cancel endpoint. "Clear log"
+  only detaches the view.
 
-## Server requirements
+## Licence
 
-Works against any Nightshift, but **1.3 or newer is recommended**: from that
-version the download log is kept per user, and `/api/version` exists so the app
-can identify the server before signing in. Against an older server the Settings
-screen shows "older than 1.3" and warns that the download log is shared between
-all users.
-
-## Server-side suggestions
-
-Not required for this client to work:
-
-- `search.py`'s routes rely on the global access gate rather than carrying
-  `@auth.login_required` themselves. It holds, but the decorator would make the
-  intent explicit and survive a refactor of the gate.
+[MIT](LICENSE)
