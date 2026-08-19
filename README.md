@@ -106,8 +106,11 @@ Capabilities* (or put your Team ID into `project.yml` so it survives
 regeneration), then build to your device.
 
 `Tools/build-ipa.sh` archives and exports an IPA from the command line;
-`Tools/make-altstore-source.py` writes the AltStore source with the IPA's exact
-size and picks up screenshots from `docs/screenshots/`.
+`Tools/make-altstore-source.py` writes the AltStore source. It reads version and
+build number out of the IPA itself — AltStore refuses to install when those
+disagree with the source — takes the IPA's exact byte size, and picks up
+screenshots from `docs/screenshots/`. Pass `--tag` if the release tag differs
+from the app version.
 
 The app mark and the launcher icon come from one place: `Tools/make-icon.py`
 rasterises the icon, `--swift` prints the same geometry as constants for the

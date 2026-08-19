@@ -15,8 +15,9 @@ as a source in AltStore or SideStore.
 import argparse
 import datetime
 import json
-import os
 import pathlib
+import plistlib
+import zipfile
 
 BUNDLE_ID = "com.jannehy.nightshift"
 TINT = "FFB03A"
@@ -32,11 +33,27 @@ DESCRIPTION = (
 )
 
 
+def read_versions(ipa: pathlib.Path) -> tuple[str, str]:
+    """CFBundleShortVersionString and CFBundleVersion from the app in the IPA."""
+    with zipfile.ZipFile(ipa) as archive:
+        names = [n for n in archive.namelist()
+                 if n.startswith("Payload/") and n.endswith(".app/Info.plist")
+                 and n.count("/") == 2]
+        if not names:
+            raise SystemExit(f"no app Info.plist inside {ipa}")
+        info = plistlib.loads(archive.read(names[0]))
+    version = info.get("CFBundleShortVersionString")
+    build = str(info.get("CFBundleVersion", "1"))
+    if not version:
+        raise SystemExit(f"no CFBundleShortVersionString in {names[0]}")
+    return version, build
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("ipa", type=pathlib.Path, help="path to the built .ipa")
-    parser.add_argument("version", help='marketing version, e.g. "1.0.0"')
-    parser.add_argument("--build", default="1", help="build number")
+    parser.add_argument("--tag", help="release tag the IPA is attached to "
+                                      "(default: v<version from the IPA>)")
     parser.add_argument("--repo", default="Jannehy/nightshift-ios",
                         help="GitHub owner/name the release lives in")
     parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path("altstore.json"))
@@ -49,14 +66,21 @@ def main() -> None:
     if not args.ipa.is_file():
         raise SystemExit(f"no such file: {args.ipa}")
 
+    # Read the version out of the package instead of taking it on the command
+    # line: AltStore refuses to install when the two disagree ("the downloaded
+    # version does not match the version specified by the source"), and nobody
+    # remembers whether the project says 1.0 or 1.0.0.
+    version, build = read_versions(args.ipa)
+    tag = args.tag or f"v{version}"
+
     base = f"https://github.com/{args.repo}"
     raw = f"https://raw.githubusercontent.com/{args.repo}/main"
     entry = {
-        "version": args.version,
-        "buildVersion": args.build,
+        "version": version,
+        "buildVersion": build,
         "date": datetime.date.today().isoformat(),
-        "localizedDescription": f"Nightshift {args.version}.",
-        "downloadURL": f"{base}/releases/download/v{args.version}/Nightshift.ipa",
+        "localizedDescription": f"Nightshift {version}.",
+        "downloadURL": f"{base}/releases/download/{tag}/Nightshift.ipa",
         "size": args.ipa.stat().st_size,
         "minOSVersion": args.min_os,
     }
@@ -66,7 +90,7 @@ def main() -> None:
     if args.out.exists():
         previous = json.loads(args.out.read_text())
         old = previous.get("apps", [{}])[0].get("versions", [])
-        versions += [v for v in old if v.get("version") != args.version]
+        versions += [v for v in old if v.get("version") != version]
 
     # Screenshots are served straight out of the repository, so adding one is
     # a matter of dropping a file in and re-running this.
@@ -105,8 +129,9 @@ def main() -> None:
 
     args.out.write_text(json.dumps(source, indent=2) + "\n")
     size_mb = entry["size"] / 1024 / 1024
-    print(f"wrote {args.out} — {args.version}, {size_mb:.1f} MB, "
-          f"{len(shots)} screenshot(s)")
+    print(f"wrote {args.out} — version {version} (build {build}), "
+          f"{size_mb:.1f} MB, {len(shots)} screenshot(s)")
+    print(f"download:   {entry['downloadURL']}")
     print(f"source URL: {raw}/{args.out.name}")
 
 

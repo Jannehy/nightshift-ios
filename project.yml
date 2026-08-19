@@ -9,7 +9,9 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    MARKETING_VERSION: "1.0"
+    # Keep this in step with the release tag: AltStore refuses to install
+    # when the source and the IPA disagree about the version.
+    MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     # Xcode's "recommended settings" prompt asks for these. Setting them here
