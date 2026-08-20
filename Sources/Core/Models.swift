@@ -121,6 +121,45 @@ struct LogState: Codable {
     }
 }
 
+extension LogState {
+    /// Track counts read out of the log text.
+    ///
+    /// While the app polls the log – after a cold start, or when a job was
+    /// begun elsewhere – no progress events arrive, so the percentage is
+    /// derived the same way the web UI derives it.
+    struct Counts {
+        let done: Int
+        let total: Int
+
+        /// The same 5 … 95 % window the web UI uses, so both agree.
+        var fraction: Double { min(0.95, 0.05 + Double(done) / Double(total) * 0.90) }
+    }
+
+    var counts: Counts? {
+        var total = LogState.number(in: log, pattern: #"\((\d+) tracks\)"#) ?? 0
+        if let found = LogState.number(in: log, pattern: #"(\d+) tracks found"#) {
+            total = max(total, found)
+        }
+        guard total > 0 else { return nil }
+        let done = LogState.matchCount(in: log, pattern: #"^(✓ |Downloaded |Skipping )"#)
+        return Counts(done: min(done, total), total: total)
+    }
+
+    private static func number(in text: String, pattern: String) -> Int? {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(text.startIndex..., in: text)
+        guard let match = regex.firstMatch(in: text, range: range),
+              let group = Range(match.range(at: 1), in: text) else { return nil }
+        return Int(text[group])
+    }
+
+    private static func matchCount(in text: String, pattern: String) -> Int {
+        guard let regex = try? NSRegularExpression(
+            pattern: pattern, options: [.anchorsMatchLines]) else { return 0 }
+        return regex.numberOfMatches(in: text, range: NSRange(text.startIndex..., in: text))
+    }
+}
+
 struct QueueEntry: Codable, Hashable, Identifiable {
     let jobID: String?
     let label: String

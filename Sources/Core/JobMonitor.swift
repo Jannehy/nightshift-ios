@@ -186,6 +186,11 @@ final class JobMonitor: ObservableObject {
             progress = 1
         } else if log.isRunning {
             state = .running
+            // No stream, so no progress events – read the counts off the log.
+            if let counts = log.counts {
+                progress = counts.fraction
+                trackCounter = "\(counts.done)/\(counts.total)"
+            }
         } else {
             state = .idle
         }
