@@ -11,8 +11,9 @@
 	<string>release-testing</string>
 	<key>signingStyle</key>
 	<string>automatic</string>
-	<!-- Replace with your ten-character Team ID:
-	     grep -m1 DEVELOPMENT_TEAM Nightshift.xcodeproj/project.pbxproj -->
+	<!-- Left as a placeholder on purpose: Tools/build-ipa.sh substitutes the
+	     Team ID from the Xcode project into a temporary copy, so the real one
+	     never has to be committed. -->
 	<key>teamID</key>
 	<string>REPLACE_WITH_TEAM_ID</string>
 	<key>stripSwiftSymbols</key>

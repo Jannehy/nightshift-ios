@@ -19,11 +19,11 @@ settings:
     # generated .xcodeproj, which the next `xcodegen generate` throws away.
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_EXTENSIONS: YES
-    # Put your Apple Developer Team ID here and signing survives regeneration –
-    # otherwise it has to be picked in Xcode's Signing tab after every run.
-    # Find it with:
-    #   grep -m1 DEVELOPMENT_TEAM Nightshift.xcodeproj/project.pbxproj
-    # DEVELOPMENT_TEAM: XXXXXXXXXX
+    # Signing survives regeneration because the team lives here rather than in
+    # the generated project. A Team ID is not a secret – it is embedded in every
+    # signed app and readable from any IPA – but if you would rather keep it out
+    # of the repository, comment this out and pass TEAM_ID to Tools/build-ipa.sh.
+    DEVELOPMENT_TEAM: G8GVCRD6S2
 
 targets:
   Nightshift:
