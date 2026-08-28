@@ -13,7 +13,9 @@ struct NightlyView: View {
                     if monitor.state != .idle || !monitor.lines.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             JobStatusView(monitor: monitor)
-                            LogView(lines: monitor.lines, height: 340)
+                            ConsoleView(lines: monitor.lines,
+                                        isRunning: monitor.state.isBusy,
+                                        height: 340)
                         }
                         .padding(16)
                         .background(Color(.secondarySystemGroupedBackground))

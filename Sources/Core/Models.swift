@@ -405,3 +405,37 @@ enum JSONValue: Codable, Hashable {
         }
     }
 }
+
+/// How a cookie file is doing.
+///
+/// The expiry date in the file is a poor warning on its own: one whose login
+/// cookie claimed 294 days left was already being turned away after six,
+/// because the site revokes sessions long before the stamps run out. The
+/// server therefore checks against the site itself and reports `signedIn`.
+struct CookieStatus: Decodable, Identifiable {
+    let kind: String
+    let state: String
+    let daysLeft: Double?
+    let signedIn: Bool?
+
+    var id: String { kind }
+
+    enum CodingKeys: String, CodingKey {
+        case kind, state
+        case daysLeft = "days_left"
+        case signedIn = "signed_in"
+    }
+
+    var needsAttention: Bool {
+        ["signed_out", "expired", "soon", "missing"].contains(state)
+    }
+
+    /// Something is broken now, as opposed to a date approaching.
+    var isUrgent: Bool {
+        ["signed_out", "expired", "missing"].contains(state)
+    }
+}
+
+struct CookieStatusResponse: Decodable {
+    let cookies: [CookieStatus]
+}

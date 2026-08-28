@@ -10,6 +10,9 @@ struct DownloadsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    if !model.cookieWarnings.isEmpty {
+                        CookieBanner(entries: model.cookieWarnings)
+                    }
                     inputCard
                     if monitor.state != .idle || !monitor.lines.isEmpty {
                         statusCard
@@ -116,11 +119,7 @@ struct DownloadsView: View {
     private var statusCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             JobStatusView(monitor: monitor)
-            LogView(lines: monitor.lines)
-            if !monitor.state.isBusy && !monitor.lines.isEmpty {
-                Button("Clear log", role: .destructive) { monitor.clear() }
-                    .font(.footnote)
-            }
+            ConsoleView(lines: monitor.lines, isRunning: monitor.state.isBusy)
         }
         .padding(16)
         .background(Color(.secondarySystemGroupedBackground))
@@ -165,6 +164,7 @@ final class DownloadsModel: ObservableObject {
     @Published var keepInSync = false
     @Published var ownerID: String?
     @Published var navidromeUsers: [NavidromeUser] = []
+    @Published var cookieWarnings: [CookieStatus] = []
 
     private static let supportedDomains = ["spotify.com", "soundcloud.com",
                                            "youtube.com", "youtu.be"]
@@ -185,8 +185,14 @@ final class DownloadsModel: ObservableObject {
     }
 
     func load(session: Session) async {
-        guard session.navidromeEnabled, let client = session.client,
-              navidromeUsers.isEmpty else { return }
+        guard let client = session.client else { return }
+
+        // Cheap and cached on the server side, so it can run on every visit.
+        if let cookies = try? await client.cookieStatus() {
+            cookieWarnings = cookies.filter { $0.needsAttention }
+        }
+
+        guard session.navidromeEnabled, navidromeUsers.isEmpty else { return }
         if let response = try? await client.navidromeUsers(), response.enabled {
             navidromeUsers = response.users
         }

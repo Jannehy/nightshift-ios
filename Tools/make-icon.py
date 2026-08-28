@@ -7,7 +7,7 @@ The mark is not placed by eye: it is drawn in unit space, measured with a
 low-resolution pass, and then scaled and shifted so it sits optically centred
 and fills a fixed share of the canvas. Balance is computed, not guessed.
 """
-import math, os, struct, sys, zlib
+import math, os, pathlib, struct, sys, zlib
 
 S = 1024                  # output size
 MEASURE = 256             # resolution of the measuring pass
@@ -220,6 +220,44 @@ def placed_geometry(scale, ox, oy):
     }
 
 
+def write_svg(path, g):
+    """The mark as SVG, drawn with `currentColor` so a page can tint it.
+
+    The crescent is a disc with the bite masked out — the same construction the
+    rasteriser and both apps use, expressed in SVG's own vocabulary.
+    """
+    def pct(v):
+        return round(v * 100, 4)
+
+    (mx, my), mr = g["moon"]
+    (bx, by), br = g["bite"]
+    heads = "".join(
+        '\n    <ellipse cx="%s" cy="%s" rx="%s" ry="%s" transform="rotate(%s %s %s)"/>'
+        % (pct(h[0]), pct(h[1]), pct(g["headRX"]), pct(g["headRY"]),
+           round(math.degrees(g["headTilt"]), 3), pct(h[0]), pct(h[1]))
+        for h in (g["head1"], g["head2"]))
+    lines = "".join(
+        '\n    <line x1="%s" y1="%s" x2="%s" y2="%s" stroke="currentColor" '
+        'stroke-width="%s" stroke-linecap="round"/>'
+        % (pct(a[0]), pct(a[1]), pct(b[0]), pct(b[1]), pct(w))
+        for a, b, w in ((g["stem1"][0], g["stem1"][1], g["stemW"]),
+                        (g["stem2"][0], g["stem2"][1], g["stemW"]),
+                        (g["beam"][0], g["beam"][1], g["beamW"])))
+
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Nightshift">
+  <mask id="bite">
+    <rect width="100" height="100" fill="white"/>
+    <circle cx="{pct(bx)}" cy="{pct(by)}" r="{pct(br)}" fill="black"/>
+  </mask>
+  <g fill="currentColor">
+    <circle cx="{pct(mx)}" cy="{pct(my)}" r="{pct(mr)}" mask="url(#bite)"/>{heads}{lines}
+  </g>
+</svg>
+"""
+    pathlib.Path(path).write_text(svg)
+    print("written", path)
+
+
 def print_swift(g):
     def p(v):
         return "CGPoint(x: %.4f, y: %.4f)" % v
@@ -250,6 +288,11 @@ if __name__ == "__main__":
     cy = (y0 + y1) / 2
     ox = 0.5 - cx * scale
     oy = (0.5 - OPTICAL_LIFT) - cy * scale
+    if "--svg" in sys.argv:
+        write_svg(sys.argv[sys.argv.index("--svg") + 1],
+                  placed_geometry(scale, ox, oy))
+        raise SystemExit(0)
+
     if "--swift" in sys.argv:
         print_swift(placed_geometry(scale, ox, oy))
         raise SystemExit(0)

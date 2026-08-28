@@ -54,15 +54,9 @@ struct LogView: View {
     }
 
     private func color(for line: String) -> Color {
-        let lower = line.lowercased()
-        if line.hasPrefix("=== DONE") || line.hasPrefix("✓") || lower.contains("downloaded") {
-            return .green
+        if line.hasPrefix("===") || line.hasPrefix("━") {
+            return LogKind.of(line) == .plain ? .secondary : LogKind.of(line).color
         }
-        if line.hasPrefix("=== FAILED") || lower.contains("error") || lower.contains("failed") {
-            return .red
-        }
-        if line.hasPrefix("===") || line.hasPrefix("━") { return .secondary }
-        if line.hasPrefix("♪") { return .primary }
-        return .primary.opacity(0.85)
+        return LogKind.of(line).color
     }
 }

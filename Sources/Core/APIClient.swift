@@ -216,6 +216,10 @@ final class APIClient {
         try await get("download-log")
     }
 
+    func cookieStatus() async throws -> [CookieStatus] {
+        try await get("/api/cookies/status", as: CookieStatusResponse.self).cookies
+    }
+
     func queue() async throws -> QueueStatus {
         try await get("api/queue")
     }
