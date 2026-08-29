@@ -14,10 +14,31 @@ enum LogKind {
         if line.hasPrefix("=== DONE") || line.hasPrefix("✓") { return .ok }
         if lower.contains("no results found") || lower.contains("lookuperror")
             || lower.contains("could not be downloaded") { return .warning }
+        if isCount(line) { return .plain }
         if line.hasPrefix("=== FAILED") || line.contains("✗") || line.contains("⚠")
             || lower.contains("error") || lower.contains("failed") { return .error }
         if lower.contains("downloaded") { return .ok }
         return .plain
+    }
+
+    /// `[2026-08-29 03:11:28]   Playlists failed:     0` — a closing statistic.
+    ///
+    /// The word "failed" makes such a line look like a failure while it is
+    /// only a count, so it is recognised by its shape instead: a short label,
+    /// a colon, a number, nothing else. The timestamp the server writes in
+    /// front carries colons of its own and has to go first, or the shape never
+    /// matches.
+    private static func isCount(_ line: String) -> Bool {
+        var body = Substring(line).drop { $0 == " " || $0 == "\t" || $0 == "•" || $0 == "-" }
+        if body.first == "[", let close = body.firstIndex(of: "]") {
+            body = body[body.index(after: close)...].drop { $0 == " " }
+        }
+        guard let colon = body.firstIndex(of: ":") else { return false }
+        let label = body[..<colon]
+        guard !label.isEmpty, label.count <= 40 else { return false }
+        let value = body[body.index(after: colon)...]
+            .trimmingCharacters(in: .whitespaces)
+        return !value.isEmpty && value.allSatisfy(\.isNumber)
     }
 
     var color: Color {
@@ -84,12 +105,16 @@ struct ConsoleView: View {
             ? NSLocalizedString("running", comment: "console state")
             : NSLocalizedString("done", comment: "console state")]
         if errorCount > 0 {
-            parts.append(String(format: NSLocalizedString("%d error(s)", comment: ""),
-                                errorCount))
+            parts.append(errorCount == 1
+                ? NSLocalizedString("1 error", comment: "console summary")
+                : String(format: NSLocalizedString("%d errors", comment: "console summary"),
+                         errorCount))
         }
         if missingCount > 0 {
-            parts.append(String(format: NSLocalizedString("%d not found", comment: ""),
-                                missingCount))
+            parts.append(missingCount == 1
+                ? NSLocalizedString("1 not found", comment: "console summary")
+                : String(format: NSLocalizedString("%d not found", comment: "console summary"),
+                         missingCount))
         }
         return parts.joined(separator: " · ")
     }

@@ -29,6 +29,15 @@
       ],
       "versions": [
         {
+          "version": "1.1.1",
+          "buildVersion": "4",
+          "date": "2026-08-29",
+          "localizedDescription": "A finished run no longer claims an error it did not have: the closing statistic \"Playlists failed: 0\" carries the word the error rule looks for, and was counted as one.\n\nThe console header and the cookie warnings are translated. They had no entry in the German file, and a missing entry shows the English key instead of failing, so they read as English inside an otherwise German app.",
+          "downloadURL": "https://github.com/Jannehy/nightshift-ios/releases/download/v1.1.1/Nightshift.ipa",
+          "size": 459921,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "1.1.0",
           "buildVersion": "3",
           "date": "2026-08-28",
