@@ -195,6 +195,10 @@ final class DownloadsModel: ObservableObject {
         guard session.navidromeEnabled, navidromeUsers.isEmpty else { return }
         if let response = try? await client.navidromeUsers(), response.enabled {
             navidromeUsers = response.users
+            // Start on the signed-in user's own account: picking "Public"
+            // hands the playlist to the server's first admin instead of to
+            // the person downloading it.
+            if let mine = response.defaultOwner { ownerID = mine }
         }
     }
 }

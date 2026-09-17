@@ -74,7 +74,11 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            .refreshable { await session.refreshMe() }
+            .task { await session.refreshVersion() }
+            .refreshable {
+                await session.refreshMe()
+                await session.refreshVersion()
+            }
             .sheet(isPresented: $showPasswordSheet) {
                 PasswordSheet(username: nil)
                     .environmentObject(session)

@@ -99,7 +99,11 @@ final class Session: ObservableObject {
 
     /// Reads the server's version. Nil means "older than 1.3" – those servers
     /// have no version endpoint at all.
-    private func refreshVersion() async {
+    ///
+    /// Called when the settings page opens, not only while the session is
+    /// built: the page showed whatever the server answered at sign-in, so an
+    /// update on the server went unnoticed until the next launch.
+    func refreshVersion() async {
         guard let client else { return }
         serverVersion = (try? await client.version()) ?? nil
     }

@@ -319,6 +319,14 @@ struct NavidromeUsersResponse: Codable {
     let users: [NavidromeUser]
     let enabled: Bool
     let error: String?
+    /// The Navidrome account belonging to whoever is signed in, when the
+    /// server can place them. Nil keeps the picker on "Public".
+    let defaultOwner: String?
+
+    enum CodingKeys: String, CodingKey {
+        case users, enabled, error
+        case defaultOwner = "default_owner"
+    }
 }
 
 // MARK: - Config

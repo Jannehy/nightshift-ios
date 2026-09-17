@@ -25,7 +25,20 @@ MSG
     exit 1
 fi
 
-[ -d "$SCHEME.xcodeproj" ] || xcodegen generate
+# Regenerate every time, not only when the project is missing. The version
+# numbers live in project.yml; an .xcodeproj left over from the previous
+# release carries the previous version and builds it without a word, which
+# has already produced one IPA that claimed to be the version before it.
+if command -v xcodegen >/dev/null 2>&1; then
+    xcodegen generate
+elif [ ! -d "$SCHEME.xcodeproj" ]; then
+    echo "Neither xcodegen nor $SCHEME.xcodeproj is here." >&2
+    echo "Install it with: brew install xcodegen" >&2
+    exit 1
+else
+    echo "xcodegen not found - building the existing project as it is." >&2
+    echo "Check that its version matches project.yml." >&2
+fi
 
 TEAM="${TEAM_ID:-}"
 if [ -z "$TEAM" ]; then
