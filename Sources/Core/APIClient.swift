@@ -256,12 +256,19 @@ final class APIClient {
         try await get("api/sync-playlists")
     }
 
-    func updateSyncMeta(url: String?, file: String?,
-                        owner: String?, isPublic: Bool) async throws {
+    /// Owner and visibility travel together and only an admin may send them;
+    /// the name belongs to whoever owns the playlist. Sending a field the
+    /// account may not change makes the server refuse the whole request.
+    func updateSyncMeta(url: String?, file: String?, name: String,
+                        owner: String? = nil, isPublic: Bool? = nil) async throws {
+        var body: [String: Any] = ["url": url ?? "", "file": file ?? "",
+                                   "name": name]
+        if let isPublic {
+            body["owner"] = owner ?? ""
+            body["public"] = isPublic
+        }
         try await send("api/sync-playlists", method: "PATCH",
-                       json: ["url": url ?? "", "file": file ?? "",
-                              "owner": owner ?? "", "public": isPublic],
-                       as: EmptyResponse.self)
+                       json: body, as: EmptyResponse.self)
     }
 
     func removeSyncItem(url: String?, file: String?) async throws {

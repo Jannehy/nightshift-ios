@@ -132,3 +132,5 @@
 "older than 1.3" = "älter als 1.3";
 "running" = "läuft";
 "unchanged" = "unverändert";
+"Name" = "Name";
+"The media server takes the name from the playlist file, which the nightly run writes again - so this is where a rename lasts." = "Den Namen nimmt der Medienserver aus der Playlist-Datei, die der nächtliche Lauf neu schreibt — hier hält ein neuer Name also.";

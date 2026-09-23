@@ -132,3 +132,5 @@
 "older than 1.3" = "older than 1.3";
 "running" = "running";
 "unchanged" = "unchanged";
+"Name" = "Name";
+"The media server takes the name from the playlist file, which the nightly run writes again - so this is where a rename lasts." = "The media server takes the name from the playlist file, which the nightly run writes again - so this is where a rename lasts.";

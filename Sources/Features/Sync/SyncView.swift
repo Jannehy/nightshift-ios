@@ -27,8 +27,8 @@ struct SyncView: View {
             .refreshable { await model.load(session: session) }
             .task { await model.load(session: session) }
             .sheet(item: $editing) { item in
-                SyncItemEditor(item: item) { owner, isPublic in
-                    await model.updateMeta(item: item, owner: owner,
+                SyncItemEditor(item: item) { name, owner, isPublic in
+                    await model.updateMeta(item: item, name: name, owner: owner,
                                            isPublic: isPublic, session: session)
                 }
                 .environmentObject(session)
@@ -74,7 +74,9 @@ struct SyncView: View {
                 .foregroundStyle(.secondary)
             }
             Spacer()
-            if session.isAdmin {
+            // Owners open the same sheet, with the name as the only field -
+            // renaming a synced playlist works nowhere else.
+            if session.isAdmin || item.canRemove {
                 Button {
                     editing = item
                 } label: {
@@ -95,50 +97,61 @@ struct SyncView: View {
     }
 }
 
-/// Admin sheet: playlist visibility and owner. Visibility is mirrored to
-/// Navidrome by the server; the owner stays local.
+/// Playlist sheet: the name for the owner, visibility and owner for an admin.
+/// Visibility is mirrored to Navidrome by the server; the owner stays local.
 struct SyncItemEditor: View {
     @EnvironmentObject private var session: Session
     @Environment(\.dismiss) private var dismiss
 
     let item: SyncItem
-    let onSave: (String?, Bool) async -> Void
+    let onSave: (String, String?, Bool?) async -> Void
 
+    @State private var name: String
     @State private var isPublic: Bool
     @State private var owner: String
     @State private var users: [NightshiftUser] = []
     @State private var isSaving = false
 
-    init(item: SyncItem, onSave: @escaping (String?, Bool) async -> Void) {
+    init(item: SyncItem, onSave: @escaping (String, String?, Bool?) async -> Void) {
         self.item = item
         self.onSave = onSave
+        _name = State(initialValue: item.name)
         _isPublic = State(initialValue: item.isPublic)
         _owner = State(initialValue: item.owner ?? "")
+    }
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    Text(item.name).font(.headline)
+                    TextField("Name", text: $name)
+                        .autocorrectionDisabled()
                     LabeledContent("Source", value: item.sourceLabel)
-                }
-
-                Section {
-                    Toggle("Public", isOn: $isPublic)
                 } footer: {
-                    Text("Public playlists are visible to every Nightshift user; the setting is mirrored to Navidrome.")
+                    Text("The media server takes the name from the playlist file, which the nightly run writes again - so this is where a rename lasts.")
                 }
 
-                Section("Owner") {
-                    Picker("Owner", selection: $owner) {
-                        Text("None").tag("")
-                        ForEach(users) { user in
-                            Text(user.username).tag(user.username)
-                        }
+                if session.isAdmin {
+                    Section {
+                        Toggle("Public", isOn: $isPublic)
+                    } footer: {
+                        Text("Public playlists are visible to every Nightshift user; the setting is mirrored to Navidrome.")
                     }
-                    .pickerStyle(.inline)
-                    .labelsHidden()
+
+                    Section("Owner") {
+                        Picker("Owner", selection: $owner) {
+                            Text("None").tag("")
+                            ForEach(users) { user in
+                                Text(user.username).tag(user.username)
+                            }
+                        }
+                        .pickerStyle(.inline)
+                        .labelsHidden()
+                    }
                 }
             }
             .navigationTitle("Playlist")
@@ -151,15 +164,17 @@ struct SyncItemEditor: View {
                     Button("Save") {
                         isSaving = true
                         Task { @MainActor in
-                            await onSave(owner.isEmpty ? nil : owner, isPublic)
+                            await onSave(trimmedName,
+                                         owner.isEmpty ? nil : owner,
+                                         session.isAdmin ? isPublic : nil)
                             dismiss()
                         }
                     }
-                    .disabled(isSaving)
+                    .disabled(isSaving || trimmedName.isEmpty)
                 }
             }
             .task {
-                guard let client = session.client else { return }
+                guard session.isAdmin, let client = session.client else { return }
                 users = (try? await client.users()) ?? []
             }
         }
@@ -216,11 +231,13 @@ final class SyncModel: ObservableObject {
         }
     }
 
-    func updateMeta(item: SyncItem, owner: String?, isPublic: Bool, session: Session) async {
+    func updateMeta(item: SyncItem, name: String, owner: String?,
+                    isPublic: Bool?, session: Session) async {
         guard let client = session.client else { return }
         do {
             try await client.updateSyncMeta(url: item.url, file: item.file,
-                                            owner: owner, isPublic: isPublic)
+                                            name: name, owner: owner,
+                                            isPublic: isPublic)
             await load(session: session)
         } catch {
             errorMessage = error.localizedDescription
