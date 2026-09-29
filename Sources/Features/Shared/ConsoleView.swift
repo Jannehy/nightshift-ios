@@ -15,8 +15,17 @@ enum LogKind {
         if lower.contains("no results found") || lower.contains("lookuperror")
             || lower.contains("could not be downloaded") { return .warning }
         if isCount(line) { return .plain }
+        // Plain "error" also hides inside words that mean nothing here:
+        // a track by "Absolute Terror" turned a clean run red, and the
+        // server then repeated the invented entry in its closing summary,
+        // so one line was counted three times. The word boundary rules
+        // those out; the second test puts back the compound exception
+        // names it would otherwise lose (HTTPError, ConnectionError).
         if line.hasPrefix("=== FAILED") || line.contains("✗") || line.contains("⚠")
-            || lower.contains("error") || lower.contains("failed") { return .error }
+            || line.range(of: #"\b(?:error|failed)"#,
+                          options: [.regularExpression, .caseInsensitive]) != nil
+            || line.range(of: #"[A-Za-z]Error\b"#,
+                          options: .regularExpression) != nil { return .error }
         if lower.contains("downloaded") { return .ok }
         return .plain
     }
