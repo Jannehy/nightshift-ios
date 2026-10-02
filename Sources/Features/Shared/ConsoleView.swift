@@ -73,11 +73,40 @@ struct ConsoleView: View {
 
     @State private var isOpen = false
 
+    /// A run closes with "Errors in this run (N):" and repeats every entry as
+    /// a bullet underneath. Counting coloured lines therefore counts one
+    /// failure three times - where it happened, in the heading, in the bullet.
+    /// Where the server states a number, that number wins; the tally is only
+    /// a fallback for a run still in progress.
+    private func statedTotal(after marker: String) -> Int? {
+        for line in lines.reversed() {
+            guard let found = line.range(of: marker) else { continue }
+            let rest = line[found.upperBound...]
+            guard let open = rest.firstIndex(of: "("),
+                  let close = rest.firstIndex(of: ")"), open < close
+            else { continue }
+            return Int(rest[rest.index(after: open)..<close])
+        }
+        return nil
+    }
+
+    private func isSummary(_ line: String) -> Bool {
+        var body = Substring(line).drop { $0 == " " || $0 == "\t" }
+        if body.first == "[", let close = body.firstIndex(of: "]") {
+            body = body[body.index(after: close)...].drop { $0 == " " }
+        }
+        return body.first == "\u{2022}"
+            || line.contains("Errors in this run")
+            || line.contains("Not found (")
+    }
+
     private var errorCount: Int {
-        lines.filter { LogKind.of($0) == .error }.count
+        statedTotal(after: "Errors in this run")
+            ?? lines.filter { !isSummary($0) && LogKind.of($0) == .error }.count
     }
     private var missingCount: Int {
-        lines.filter { LogKind.of($0) == .warning }.count
+        statedTotal(after: "Not found")
+            ?? lines.filter { !isSummary($0) && LogKind.of($0) == .warning }.count
     }
 
     var body: some View {
