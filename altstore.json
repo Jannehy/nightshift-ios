@@ -29,6 +29,15 @@
       ],
       "versions": [
         {
+          "version": "1.1.5",
+          "buildVersion": "8",
+          "date": "2026-10-02",
+          "localizedDescription": "Nightshift 1.1.5.",
+          "downloadURL": "https://github.com/Jannehy/nightshift-ios/releases/download/v1.1.5/Nightshift.ipa",
+          "size": 474034,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "1.1.4",
           "buildVersion": "7",
           "date": "2026-09-30",
